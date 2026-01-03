@@ -1,0 +1,36 @@
+---
+- name: Configure basic web server monitoring
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Create monitoring script
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          LOGFILE="/var/log/web-health.log"
+          URL="http://localhost"
+
+          if curl -sf "$URL" > /dev/null 2>&1; then
+            echo "$(date): OK - Web server is UP" >> "$LOGFILE"
+          else
+            echo "$(date): ERROR - Web server is DOWN" >> "$LOGFILE"
+          fi
+        dest: /root/check-web-health.sh
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Create log file with proper permissions
+      ansible.builtin.file:
+        path: /var/log/web-health.log
+        state: touch
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Schedule health check every 5 minutes
+      ansible.builtin.cron:
+        name: "Web server health check"
+        minute: "*/5"
+        job: "/root/check-web-health.sh"
+        user: root
