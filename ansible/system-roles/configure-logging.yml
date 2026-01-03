@@ -1,0 +1,30 @@
+---
+- name: Configure system logging with rsyslog
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Ensure rsyslog is installed
+      ansible.builtin.dnf:
+        name: rsyslog
+        state: present
+
+    - name: Enable and start rsyslog
+      ansible.builtin.systemd:
+        name: rsyslog
+        state: started
+        enabled: yes
+
+    - name: Configure log rotation (prevent disk overflow)
+      ansible.builtin.copy:
+        content: |
+          /var/log/*.log {
+              weekly
+              rotate 4
+              compress
+              missingok
+              notifempty
+          }
+        dest: /etc/logrotate.d/system-logs
+        owner: root
+        group: root
+        mode: '0644'
