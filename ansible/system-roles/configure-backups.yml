@@ -1,0 +1,30 @@
+---
+- name: Configure automated backups for web content
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: /backup/web
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Create backup script
+      ansible.builtin.copy:
+        content: |
+          #!/bin/bash
+          rsync -a --delete /var/www/html/ /backup/web/$(date +\%Y-\%m-\%d)/
+        dest: /root/backup-web.sh
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Schedule daily backup at 2 AM
+      ansible.builtin.cron:
+        name: "Backup web content"
+        minute: "0"
+        hour: "2"
+        job: "/root/backup-web.sh"
+        user: root
