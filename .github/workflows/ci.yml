@@ -1,0 +1,48 @@
+name: Full Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt check
+        run: |
+          cd terraform/web-server
+          terraform fmt -check
+
+      - name: Terraform init
+        run: |
+          cd terraform/web-server
+          terraform init
+
+      - name: Terraform validate
+        run: |
+          cd terraform/web-server
+          terraform validate
+
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Ansible syntax check
+        run: |
+          cd ansible/system-roles
+          ansible-playbook --syntax-check *.yml
