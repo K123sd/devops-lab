@@ -1,0 +1,7 @@
+---
+- name: Ensure SELinux is enforcing
+  hosts: localhost
+  become: yes
+  roles:
+    - role: redhat.rhel_system_roles.selinux
+      selinux_state: enforcing

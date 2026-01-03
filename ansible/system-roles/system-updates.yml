@@ -1,0 +1,16 @@
+---
+- name: Apply security updates and install httpd
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Update all packages with security fixes
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+        security: yes
+        update_cache: yes
+
+    - name: Ensure httpd is installed
+      ansible.builtin.dnf:
+        name: httpd
+        state: present

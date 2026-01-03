@@ -1,0 +1,15 @@
+---
+- name: Install and enable firewalld on remote EC2
+  hosts: web_server
+  become: yes
+  tasks:
+    - name: Install firewalld
+      ansible.builtin.dnf:
+        name: firewalld
+        state: present
+
+    - name: Start and enable firewalld
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes

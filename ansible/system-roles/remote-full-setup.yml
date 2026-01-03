@@ -1,0 +1,87 @@
+---
+- name: Full system setup and hardening
+  hosts: web_server
+  become: yes
+  tasks:
+    # Install firewalld
+    - name: Install firewalld
+      ansible.builtin.dnf:
+        name: firewalld
+        state: present
+
+    - name: Start firewalld
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    # Apply security updates
+    - name: Apply all security updates
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+        security: yes
+        update_cache: yes
+
+    # Install web server
+    - name: Install httpd
+      ansible.builtin.dnf:
+        name: httpd
+        state: present
+
+    - name: Start and enable httpd
+      ansible.builtin.systemd:
+        name: httpd
+        state: started
+        enabled: yes
+
+    # Deploy web content
+    - name: Deploy index.html
+      ansible.builtin.copy:
+        content: |
+          <html>
+          <head><title>DevOps Lab</title></head>
+          <body>
+            <h1>Secure RHEL 10 Web Server</h1>
+            <p>Automated with Terraform + Ansible</p>
+            <p>Hardened: SELinux, NTP, Firewall</p>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+
+    # Configure strict firewall
+    - name: Enforce minimal firewall (SSH + HTTP)
+      ansible.builtin.shell: |
+        firewall-cmd --permanent --remove-service=cockpit 2>/dev/null || true
+        firewall-cmd --permanent --remove-service=dhcpv6-client 2>/dev/null || true
+        firewall-cmd --permanent --add-service=ssh
+        firewall-cmd --permanent --add-port=80/tcp
+        firewall-cmd --reload
+      changed_when: true
+
+    # Configure time sync
+    - name: Install and start chrony
+      ansible.builtin.dnf:
+        name: chrony
+        state: present
+
+    - name: Ensure chrony is running
+      ansible.builtin.systemd:
+        name: chronyd
+        state: started
+        enabled: yes
+
+    # Enforce SELinux (direct commands)
+    - name: Set SELinux to enforcing (runtime)
+      ansible.builtin.command: setenforce 1
+      changed_when: false
+
+    - name: Set SELinux to enforcing (permanent)
+      ansible.builtin.lineinfile:
+        path: /etc/selinux/config
+        regexp: '^SELINUX='
+        line: 'SELINUX=enforcing'
+        backup: yes

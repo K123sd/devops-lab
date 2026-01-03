@@ -1,0 +1,17 @@
+---
+- name: Enforce minimal firewall (SSH + HTTP only)
+  hosts: localhost
+  become: yes
+  roles:
+    - role: redhat.rhel_system_roles.firewall
+      firewall_config:
+        # Enable what we want
+        - service: ssh
+          state: enabled
+        - port: 80/tcp
+          state: enabled
+        # Disable what we don't want
+        - service: cockpit
+          state: disabled
+        - service: dhcpv6-client
+          state: disabled

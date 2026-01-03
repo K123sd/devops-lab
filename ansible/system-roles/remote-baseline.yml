@@ -1,0 +1,15 @@
+---
+- name: Apply security & time baseline to remote EC2
+  hosts: web_server
+  become: yes
+  roles:
+    - role: redhat.rhel_system_roles.timesync
+      timesync_ntp_servers:
+        - hostname: 0.rhel.pool.ntp.org
+          iburst: true
+        - hostname: 1.rhel.pool.ntp.org
+          iburst: true
+      timesync_manage_chrony: true
+
+    - role: redhat.rhel_system_roles.selinux
+      selinux_state: enforcing

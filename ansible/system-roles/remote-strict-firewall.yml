@@ -1,0 +1,13 @@
+---
+- name: Enforce minimal firewall on remote EC2
+  hosts: web_server
+  become: yes
+  tasks:
+    - name: Reset firewall and allow only SSH + HTTP
+      ansible.builtin.shell: |
+        firewall-cmd --permanent --remove-service=cockpit 2>/dev/null || true
+        firewall-cmd --permanent --remove-service=dhcpv6-client 2>/dev/null || true
+        firewall-cmd --permanent --add-service=ssh
+        firewall-cmd --permanent --add-port=80/tcp
+        firewall-cmd --reload
+      changed_when: true
