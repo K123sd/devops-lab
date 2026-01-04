@@ -1,4 +1,4 @@
-name: Full Validation
+name: Full Validation + Security Scan
 
 on:
   push:
@@ -31,18 +31,33 @@ jobs:
           cd terraform/web-server
           terraform validate
 
+      - name: Install tfsec (Terraform security scanner)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/aquasecurity/tfsec/master/install.sh | sh -s -- -b $HOME/.local/bin
+
+      - name: Run tfsec
+        run: |
+          cd terraform/web-server
+          $HOME/.local/bin/tfsec .
+
   ansible:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Ansible
+      - name: Install Ansible and ansible-lint
         run: |
           sudo apt update
           sudo apt install -y ansible
+          pip3 install ansible-lint
 
       - name: Ansible syntax check
         run: |
           cd ansible/system-roles
           ansible-playbook --syntax-check *.yml
+
+      - name: Run ansible-lint
+        run: |
+          cd ansible/system-roles
+          ansible-lint *.yml
