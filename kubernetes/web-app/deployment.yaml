@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - name: web-app
-        image: YOUR_IMAGE  # We'll fix this
+        image: localhost/web-app:latest
+        imagePullPolicy: Never  # Use local image
         ports:
         - containerPort: 80

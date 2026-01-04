@@ -9,4 +9,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer  # In AWS EKS, this creates an ELB
+  type: NodePort  # Exposes on high port (e.g., 30080); works on any K8s
